@@ -1,0 +1,33 @@
+{
+    "name": "ankapix/phalcon4-sqlsrv",
+    "description": "Phalcon4 SqlSrv",
+    "keywords": ["framework", "phalcon", "sqlsrv"],
+    "require": {
+        "php": ">=7.2",
+        "ext-phalcon": ">=3.0.0"
+    },
+    "require-dev": {
+        "codeception/verify": "*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Yasin Köse",
+            "email": "bilgi@yasinkose.com.tr",
+            "homepage": "http://www.ankapix.com",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Phalcon\\Db\\": "Phalcon/Db/",
+            "Phalcon\\Logger\\": "Phalcon/Logger/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Phalcon\\Db\\": "Phalcon/Db/",
+            "Phalcon\\Logger\\": "Phalcon/Logger/"
+        }
+    }
+}
