@@ -1,4 +1,4 @@
-# Phalcon - MS SQL Server (PDO) Adapter
+# Phalcon4 - MS SQL Server (PDO) Adapter
 
 - Phalcon 4+ support
 
