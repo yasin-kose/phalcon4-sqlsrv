@@ -50,7 +50,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             $options = array();
         }
 
-        $dsn = "sqlsrv:server=" . $descriptor['host'] . ";database=" . $descriptor['dbname'] . ";LoginTimeout=3";
+        $dsn = "sqlsrv:server=" . $descriptor['host'] . ";database=" . $descriptor['dbname'] . ";Encrypt=No;LoginTimeout=10";
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
