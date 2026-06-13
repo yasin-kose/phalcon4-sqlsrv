@@ -1,10 +1,13 @@
 {
     "name": "ankapix/phalcon4-sqlsrv",
-    "description": "Phalcon4 SqlSrv",
-    "keywords": ["framework", "phalcon", "sqlsrv"],
+    "description": "Microsoft SQL Server (PDO) database adapter for the Phalcon 4 framework",
+    "homepage": "https://ankapix.com",
+    "keywords": ["phalcon", "phalcon4", "sqlsrv", "mssql", "sql-server", "pdo", "database", "adapter", "dialect"],
     "require": {
         "php": ">=7.2",
-        "ext-phalcon": ">=4.0.0"
+        "ext-phalcon": ">=4.0.0",
+        "ext-pdo": "*",
+        "ext-pdo_sqlsrv": "*"
     },
     "require-dev": {
         "codeception/verify": "*"
@@ -13,11 +16,21 @@
     "authors": [
         {
             "name": "Yasin Köse",
-            "email": "bilgi@yasinkose.com.tr",
-            "homepage": "http://www.ankapix.com",
+            "email": "yasin@uludem.com.tr",
+            "homepage": "https://ankapix.com",
             "role": "Developer"
         }
     ],
+    "support": {
+        "email": "yasin@uludem.com.tr",
+        "issues": "https://github.com/yasin-kose/phalcon4-sqlsrv/issues",
+        "source": "https://github.com/yasin-kose/phalcon4-sqlsrv"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Phalcon\\Db\\": "Phalcon/Db/",

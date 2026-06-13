@@ -6,14 +6,13 @@ use Phalcon\Db\Result\PdoSqlsrv as ResultPdo;
 
 /**
  * Phalcon\Db\Adapter\Pdo\Sqlsrv
- * Specific functions for the MsSQL database system
+ * Microsoft SQL Server veritabanı sistemine özgü işlevler.
  * <code>
  * $config = array(
- * "host" => "192.168.0.11", 
- * "dbname" => "blog",
- * "port" => 3306,
- * "username" => "sigma",
- * "password" => "secret"
+ *     "host"     => "192.168.0.11",
+ *     "dbname"   => "blog",
+ *     "username" => "sigma",
+ *     "password" => "secret",
  * );
  * $connection = new \Phalcon\Db\Adapter\Pdo\Sqlsrv($config);
  * </code>.
@@ -27,8 +26,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
     protected $_dialectType = 'sqlsrv';
 
     /**
-     * This method is automatically called in Phalcon\Db\Adapter\Pdo constructor.
-     * Call it when you need to restore a database connection.
+     * Bu metot, Phalcon\Db\Adapter\Pdo yapıcı metodunda otomatik olarak çağrılır.
+     * Bir veritabanı bağlantısını yeniden kurmanız gerektiğinde bunu çağırın.
      *
      * @param array $descriptor
      *
@@ -41,7 +40,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         }
 
         /*
-         * Check if the developer has defined custom options or create one from scratch
+         * Geliştiricinin özel seçenekler tanımlayıp tanımlamadığını kontrol et, yoksa sıfırdan oluştur
          */
         if (isset($descriptor['options']) === true) {
             $options = $descriptor['options'];
@@ -54,11 +53,11 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
-        $this->_pdo = new \PDO($dsn, $dbusername, $dbpassword);
+        $this->_pdo = new \PDO($dsn, $dbusername, $dbpassword, $options);
         $this->_pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         /*
-         * Set dialect class
+         * Dialect sınıfını ayarla
          */
         if (isset($descriptor['dialectClass']) === false) {
             $dialectClass = 'Phalcon\\Db\\Dialect\\' . ucfirst($this->_dialectType);
@@ -66,7 +65,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             $dialectClass = $descriptor['dialectClass'];
         }
         /*
-         * Create the instance only if the dialect is a string
+         * Örneği yalnızca dialect bir string ise oluştur
          */
         if (is_string($dialectClass) === true) {
             $dialectObject = new $dialectClass();
@@ -76,7 +75,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
     }
 
     /**
-     * Returns an array of Phalcon\Db\Column objects describing a table
+     * Bir tabloyu tanımlayan Phalcon\Db\Column nesnelerinden oluşan bir dizi döndürür
      * <code>
      * print_r($connection->describeColumns("posts"));
      * </code>.
@@ -84,14 +83,14 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
      * @param string $table
      * @param string $schema
      *
-     * @return \Phalcon\Db\Column
+     * @return \Phalcon\Db\Column[]
      */
     public function describeColumns(string $table, ?string $schema = null): array
     {
         $oldColumn = null;
 
         /*
-         * Get primary keys
+         * Birincil anahtarları al
          */
         $primaryKeys = array();
         foreach ($this->fetchAll($this->_dialect->getPrimaryKey($table, $schema)) as $field) {
@@ -99,30 +98,36 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         }
 
         /*
-         * Get the SQL to describe a table
-         * We're using FETCH_NUM to fetch the columns
-         * Get the describe
-         * Field Indexes: 0:name, 1:type, 2:not null, 3:key, 4:default, 5:extra
+         * Bir tabloyu tanımlamak için SQL'i al
+         * Sütunları çekmek için FETCH_NUM kullanıyoruz
+         * Tanımlamayı al
+         * Alan İndeksleri: 0:name, 1:type, 2:not null, 3:key, 4:default, 5:extra
          */
         foreach ($this->fetchAll($this->_dialect->describeColumns($table, $schema)) as $field) {
             /*
-             * By default the bind types is two
+             * Varsayılan olarak bind tipi ikidir
              */
             $definition = array('bindType' => Column::BIND_PARAM_STR);
 
             /*
-             * By checking every column type we convert it to a Phalcon\Db\Column
+             * Her sütun tipini kontrol ederek onu bir Phalcon\Db\Column'a dönüştürüyoruz
              */
             $autoIncrement = false;
             $columnType = $field['TYPE_NAME'];
             switch ($columnType) {
                 /*
-                 * Smallint/Bigint/Integers/Int are int
+                 * Smallint/Bigint/Integers/Int int türündedir
                  */
                 case 'int identity':
                 case 'tinyint identity':
                 case 'smallint identity':
                     $definition['type'] = Column::TYPE_INTEGER;
+                    $definition['isNumeric'] = true;
+                    $definition['bindType'] = Column::BIND_PARAM_INT;
+                    $autoIncrement = true;
+                    break;
+                case 'bigint identity':
+                    $definition['type'] = Column::TYPE_BIGINTEGER;
                     $definition['isNumeric'] = true;
                     $definition['bindType'] = Column::BIND_PARAM_INT;
                     $autoIncrement = true;
@@ -152,6 +157,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
                     $definition['bindType'] = Column::BIND_PARAM_DECIMAL;
                     break;
                 case 'float':
+                case 'real':
                     $definition['type'] = Column::TYPE_FLOAT;
                     $definition['isNumeric'] = true;
                     $definition['bindType'] = Column::BIND_PARAM_DECIMAL;
@@ -166,30 +172,38 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
                     break;
 
                 /*
-                 * Date are dates
+                 * Date türleri tarihtir
                  */
                 case 'date':
                     $definition['type'] = Column::TYPE_DATE;
                     break;
 
                 /*
-                 * Special type for datetime
+                 * Time
+                 */
+                case 'time':
+                    $definition['type'] = Column::TYPE_TIME;
+                    break;
+
+                /*
+                 * datetime için özel tip
                  */
                 case 'datetime':
                 case 'datetime2':
                 case 'smalldatetime':
+                case 'datetimeoffset':
                     $definition['type'] = Column::TYPE_DATETIME;
                     break;
 
                 /*
-                 * Timestamp are dates
+                 * Timestamp türleri tarihtir
                  */
                 case 'timestamp':
                     $definition['type'] = Column::TYPE_TIMESTAMP;
                     break;
 
                 /*
-                 * Chars are chars
+                 * Char türleri char'dır
                  */
                 case 'char':
                 case 'nchar':
@@ -202,22 +216,32 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
                     break;
 
                 /*
-                 * Text are varchars
+                 * Text türleri varchar'dır
                  */
                 case 'text':
                 case 'ntext':
+                case 'xml':
                     $definition['type'] = Column::TYPE_TEXT;
                     break;
 
                 /*
-                 * blob type
+                 * blob tipi
                  */
                 case 'varbinary':
+                case 'binary':
+                case 'image':
                     $definition['type'] = Column::TYPE_BLOB;
                     break;
 
                 /*
-                 * By default is string
+                 * GUID bir string olarak saklanır
+                 */
+                case 'uniqueidentifier':
+                    $definition['type'] = Column::TYPE_VARCHAR;
+                    break;
+
+                /*
+                 * Varsayılan olarak string'dir
                  */
                 default:
                     $definition['type'] = Column::TYPE_VARCHAR;
@@ -225,7 +249,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             }
 
             /*
-             * If the column type has a parentheses we try to get the column size from it
+             * Sütun tipinde parantez varsa, sütun boyutunu oradan almaya çalışıyoruz
              */
             $definition['size'] = (int) $field['LENGTH'];
             $definition['precision'] = (int) $field['PRECISION'];
@@ -236,7 +260,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             }
 
             /*
-             * Positions
+             * Konumlar
              */
             if (!$oldColumn) {
                 $definition['first'] = true;
@@ -245,28 +269,28 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             }
 
             /*
-             * Check if the field is primary key
+             * Alanın birincil anahtar olup olmadığını kontrol et
              */
             if (isset($primaryKeys[$field['COLUMN_NAME']])) {
                 $definition['primary'] = true;
             }
 
             /*
-             * Check if the column allows null values
+             * Sütunun null değerlere izin verip vermediğini kontrol et
              */
             if ($field['NULLABLE'] == 0) {
                 $definition['notNull'] = true;
             }
 
             /*
-             * Check if the column is auto increment
+             * Sütunun otomatik artan olup olmadığını kontrol et
              */
             if ($autoIncrement) {
                 $definition['autoIncrement'] = true;
             }
 
             /*
-             * Check if the column is default values
+             * Sütunun varsayılan değere sahip olup olmadığını kontrol et
              */
             if ($field['COLUMN_DEF'] != null) {
                 $definition['default'] = $field['COLUMN_DEF'];
@@ -281,15 +305,15 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
     
     public function getDsnDefaults(): array
     {
-        
+        return [];
     }
     /**
-     * Sends SQL statements to the database server returning the success state.
-     * Use this method only when the SQL statement sent to the server is returning rows
+     * SQL ifadelerini veritabanı sunucusuna gönderir ve başarı durumunu döndürür.
+     * Bu metodu yalnızca sunucuya gönderilen SQL ifadesi satır döndürdüğünde kullanın
      * <code>
      * //Querying data
-     * $resultset = $connection->query("SELECTFROM robots WHERE type='mechanical'");
-     * $resultset = $connection->query("SELECTFROM robots WHERE type=?", array("mechanical"));
+     * $resultset = $connection->query("SELECT * FROM robots WHERE type = 'mechanical'");
+     * $resultset = $connection->query("SELECT * FROM robots WHERE type = ?", array("mechanical"));
      * </code>.
      *
      * @param string $sqlStatement
@@ -303,7 +327,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         $eventsManager = $this->eventsManager;
 
         /*
-         * Execute the beforeQuery event if a EventsManager is available
+         * Bir EventsManager mevcutsa beforeQuery olayını çalıştır
          */
         if (is_object($eventsManager)) {
             $this->_sqlStatement = $sqlStatement;
@@ -333,7 +357,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         }
 
         /*
-         * Execute the afterQuery event if a EventsManager is available
+         * Bir EventsManager mevcutsa afterQuery olayını çalıştır
          */
         if (is_object($statement)) {
             if (is_object($eventsManager)) {
@@ -345,8 +369,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
     }
 
     /**
-     * Sends SQL statements to the database server returning the success state.
-     * Use this method only when the SQL statement sent to the server doesn't return any rows
+     * SQL ifadelerini veritabanı sunucusuna gönderir ve başarı durumunu döndürür.
+     * Bu metodu yalnızca sunucuya gönderilen SQL ifadesi herhangi bir satır döndürmediğinde kullanın
      * <code>
      * //Inserting data
      * $success = $connection->execute("INSERT INTO robots VALUES (1, 'Astro Boy')");
@@ -364,7 +388,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             $eventsManager = $this->eventsManager;
     
             /*
-             * Execute the beforeQuery event if a EventsManager is available
+             * Bir EventsManager mevcutsa beforeQuery olayını çalıştır
              */
             if (is_object($eventsManager)) {
                 $this->_sqlStatement = $sqlStatement;
@@ -377,7 +401,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             }
     
             /*
-             * Initialize affectedRows to 0
+             * affectedRows değerini 0 olarak başlat
              */
             $affectedRows = 0;
     
@@ -397,11 +421,11 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             } else {
                 $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
                 $statement->execute();
-                $affectedRows = $pdo->exec($sqlStatement);
+                $affectedRows = $statement->rowCount();
             }
     
             /*
-             * Execute the afterQuery event if an EventsManager is available
+             * Bir EventsManager mevcutsa afterQuery olayını çalıştır
              */
             if (is_int($affectedRows)) {
                 $this->_affectedRows = $affectedRows;

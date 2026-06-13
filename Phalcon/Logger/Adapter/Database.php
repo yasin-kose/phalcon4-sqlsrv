@@ -9,26 +9,26 @@ use Phalcon\Logger\AdapterInterface;
 
 /**
  * Phalcon\Logger\Adapter\Database
- * Adapter to store logs in a database table.
+ * Günlük kayıtlarını bir veritabanı tablosunda saklamak için adaptör.
  */
 class Database extends LoggerAdapter implements AdapterInterface
 {
     /**
-     * Username.
+     * Kullanıcı adı.
      *
      * @var string
      */
     protected $username = 'guest';
 
     /**
-     * Adapter options.
+     * Adaptör seçenekleri.
      *
      * @var array
      */
     protected $options = [];
 
     /**
-     * Class constructor.
+     * Sınıf kurucusu.
      *
      * @param string $name
      * @param array  $options
@@ -67,7 +67,7 @@ class Database extends LoggerAdapter implements AdapterInterface
     }
 
     /**
-     * Writes the log to the file itself.
+     * Günlük kaydını yapılandırılan veritabanı tablosuna yazar.
      *
      * @param string $message
      * @param int    $type
@@ -76,9 +76,6 @@ class Database extends LoggerAdapter implements AdapterInterface
      */
     public function logInternal($message, $type, $time, $context)
     {
-        //        return $this->options['db']->execute(
-//                'INSERT INTO ' . $this->options['table'] . ' (LogType, LogProcess, LogContent, LogUser, LogDate, LogIP, LogBrowser) VALUES (?, ?, ?, ?, ?, ?, ?)', [$type, $context['process'], $message, $this->username, date('Y-m-d H:i:s', $time), $this->getIP(), $this->getBrowser()]
-//        );
         return $this->options['db']->insertAsDict(
                 $this->options['table'], array(
                 'LogType' => $type,
@@ -92,7 +89,7 @@ class Database extends LoggerAdapter implements AdapterInterface
     }
 
     /**
-     * Closes the logger.
+     * Günlükçüyü kapatır.
      *
      * @return bool
      */
@@ -103,20 +100,22 @@ class Database extends LoggerAdapter implements AdapterInterface
 
     public function getIP()
     {
-        return (getenv(HTTP_X_FORWARDED_FOR)) ? getenv(HTTP_X_FORWARDED_FOR) : getenv(REMOTE_ADDR);
+        return (getenv('HTTP_X_FORWARDED_FOR')) ? getenv('HTTP_X_FORWARDED_FOR') : getenv('REMOTE_ADDR');
     }
 
     public function getBrowser()
     {
-        // Declare known browsers to look for
+        $info = array('name' => '', 'version' => '');
+
+        // Aranacak bilinen tarayıcıları tanımla
         $browsers = array('chrome', 'firefox', 'safari', 'msie', 'opera',
             'mozilla', 'seamonkey', 'konqueror', 'netscape',
             'gecko', 'navigator', 'mosaic', 'lynx', 'amaya',
             'omniweb', 'avant', 'camino', 'flock', 'aol', );
 
-        // Find all phrases (or return empty array if none found)
+        // Tüm ifadeleri bul (veya hiçbiri bulunamazsa boş dizi döndür)
         foreach ($browsers as $browser) {
-            if (preg_match("#($browser)[/ ]?([0-9.]*)#", strtolower($_SERVER['HTTP_USER_AGENT']), $match)) {
+            if (preg_match("#($browser)[/ ]?([0-9.]*)#", strtolower($_SERVER['HTTP_USER_AGENT'] ?? ''), $match)) {
                 $info['name'] = $match[1];
                 $info['version'] = $match[2];
                 break;

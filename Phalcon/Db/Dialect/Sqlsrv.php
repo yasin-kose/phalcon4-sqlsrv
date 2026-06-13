@@ -7,24 +7,24 @@ use Phalcon\Db\Exception;
 
 /**
  * Phalcon\Db\Dialect\Sqlsrv
- * Generates database specific SQL for the MsSQL RDBMS.
+ * MsSQL RDBMS için veritabanına özgü SQL üretir.
  */
 class Sqlsrv extends \Phalcon\Db\Dialect
 {
     /**
-     * Escape Char.
+     * Kaçış (escape) karakteri.
      *
      * @var string
      */
     protected $_escapeChar = '"';
 
     /**
-     * Generates the SQL for LIMIT clause
+     * LIMIT yan tümcesi için SQL üretir
      * <code>
      * $sql = $dialect->limit('SELECT * FROM robots', 10);
-     * echo $sql; // SELECT * FROM robots LIMIT 10
-     * $sql = $dialect->limit('SELECTFROM robots', [10, 50]);
-     * echo $sql; // SELECT * FROM robots OFFSET 10 ROWS FETCH NEXT 50 ROWS ONLY
+     * echo $sql; // SELECT * FROM robots ORDER BY 1 OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+     * $sql = $dialect->limit('SELECT * FROM robots', [10, 50]);
+     * echo $sql; // SELECT * FROM robots ORDER BY 1 OFFSET 50 ROWS FETCH NEXT 10 ROWS ONLY
      * </code>.
      *
      * @param string $sqlQuery
@@ -51,7 +51,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Returns a SQL modified with a FOR UPDATE clause.
+     * FOR UPDATE yan tümcesi eklenerek değiştirilmiş bir SQL döndürür.
      *
      * <code>
      * $sql = $dialect->forUpdate('SELECT * FROM robots');
@@ -64,7 +64,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Returns a SQL modified with a LOCK IN SHARE MODE clause.
+     * LOCK IN SHARE MODE yan tümcesi eklenerek değiştirilmiş bir SQL döndürür.
      *
      * <code>
      * $sql = $dialect->sharedLock('SELECT * FROM robots');
@@ -77,7 +77,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Gets the column name in MsSQL.
+     * MsSQL'deki sütun adını alır.
      *
      * @param mixed $column
      *
@@ -97,11 +97,6 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                 if (empty($columnSql)) {
                     $columnSql .= 'INT';
                 }
-
-//                $columnSql .= '('.$column->getSize().')';
-//                if ($column->isUnsigned()) {
-//                    $columnSql .= ' UNSIGNED';
-//                }
                 break;
 
             case Column::TYPE_DATE:
@@ -122,9 +117,6 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                     $columnSql .= 'DECIMAL';
                 }
                 $columnSql .= '('.$column->getSize().','.$column->getScale().')';
-//                if ($column->isUnsigned()) {
-//                    $columnSql .= ' UNSIGNED';
-//                }
                 break;
 
             case Column::TYPE_DATETIME:
@@ -164,16 +156,8 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                 }
                 $size = $column->getSize();
                 if ($size) {
-//                    $scale = $column->getScale();
-//                    if ($scale) {
-//                        $columnSql .= '('.size.','.scale.')';
-//                    } else {
-                        $columnSql .= '('.size.')';
-//                    }
+                    $columnSql .= '('.$size.')';
                 }
-//                if ($column->isUnsigned()) {
-//                    $columnSql .= ' UNSIGNED';
-//                }
                 break;
 
             case Column::TYPE_DOUBLE:
@@ -190,9 +174,6 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                         $columnSql .= ')';
                     }
                 }
-//                if ($column->isUnsigned()) {
-//                    $columnSql .= ' UNSIGNED';
-//                }
                 break;
 
             case Column::TYPE_BIGINTEGER:
@@ -203,9 +184,6 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                 if ($size) {
                     $columnSql .= '('.$size.')';
                 }
-//                if ($column->isUnsigned()) {
-//                    $columnSql .= ' UNSIGNED';
-//                }
                 break;
 
             case Column::TYPE_TINYBLOB:
@@ -234,7 +212,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                         foreach ($typeValues as $value) {
                             $valueSql .= '"'.addcslashes($value, '"').'", ';
                         }
-                        $columnSql .= '('.substr(valueSql, 0, -2).')';
+                        $columnSql .= '('.substr($valueSql, 0, -2).')';
                     } else {
                         $columnSql .= '("'.addcslashes($typeValues, '"').'")';
                     }
@@ -246,7 +224,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to add a column to a table.
+     * Bir tabloya sütun eklemek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -288,7 +266,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to modify a column in a table.
+     * Bir tablodaki sütunu değiştirmek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -322,7 +300,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to delete a column from a table.
+     * Bir tablodan sütun silmek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -336,7 +314,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to add an index to a table.
+     * Bir tabloya index eklemek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -359,7 +337,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to delete an index from a table.
+     * Bir tablodan index silmek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -373,7 +351,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to add the primary key to a table.
+     * Bir tabloya primary key eklemek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -387,7 +365,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to delete primary key from a table.
+     * Bir tablodan primary key silmek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -400,7 +378,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to add an index to a table.
+     * Bir tabloya index eklemek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -426,7 +404,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to delete a foreign key from a table.
+     * Bir tablodan foreign key silmek için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -440,7 +418,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to create a table.
+     * Bir tablo oluşturmak için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -462,7 +440,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
         }
 
         /*
-         * Create a temporary o normal table
+         * Geçici veya normal bir tablo oluştur
          */
         if ($temporary) {
             $sql = 'CREATE TEMPORARY TABLE '.$table." (\n\t";
@@ -475,7 +453,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
             $columnLine = '['.$column->getName().'] '.$this->getColumnDefinition($column);
 
             /*
-             * Add a Default clause
+             * Bir Default yan tümcesi ekle
              */
             if ($column->hasDefault()) {
                 $defaultValue = $column->getDefault();
@@ -487,21 +465,21 @@ class Sqlsrv extends \Phalcon\Db\Dialect
             }
 
             /*
-             * Add a NOT NULL clause
+             * Bir NOT NULL yan tümcesi ekle
              */
             if ($column->isNotNull()) {
                 $columnLine .= ' NOT NULL';
             }
 
             /*
-             * Add an AUTO_INCREMENT clause
+             * Bir AUTO_INCREMENT yan tümcesi ekle
              */
             if ($column->isAutoIncrement()) {
                 $columnLine .= ' IDENTITY(1,1)';
             }
 
             /*
-             * Mark the column as primary key
+             * Sütunu primary key olarak işaretle
              */
             if ($column->isPrimary()) {
                 $columnLine .= ' PRIMARY KEY';
@@ -511,7 +489,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
         }
 
         /*
-         * Create related indexes
+         * İlişkili index'leri oluştur
          */
         if (isset($definition['indexes']) === true) {
             foreach ($definition['indexes'] as $index) {
@@ -519,7 +497,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
                 $indexType = $index->getType();
 
                 /*
-                 * If the index name is primary we add a primary key
+                 * Index adı primary ise bir primary key ekleriz
                  */
                 if ($indexName == 'PRIMARY') {
                     $indexSql = 'PRIMARY KEY ('.$this->getColumnList($index->getColumns()).')';
@@ -536,7 +514,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
         }
 
         /*
-         * Create related references
+         * İlişkili referansları oluştur
          */
         if (isset($definition['references']) === true) {
             foreach ($definition['references'] as $reference) {
@@ -545,12 +523,12 @@ class Sqlsrv extends \Phalcon\Db\Dialect
 
                 $onDelete = $reference->getOnDelete();
                 if (!empty($onDelete)) {
-                    $referenceSql .= ' ON DELETE '.onDelete;
+                    $referenceSql .= ' ON DELETE '.$onDelete;
                 }
 
                 $onUpdate = $reference->getOnUpdate();
                 if (!empty($onUpdate)) {
-                    $referenceSql .= ' ON UPDATE '.onUpdate;
+                    $referenceSql .= ' ON UPDATE '.$onUpdate;
                 }
 
                 $createLines[] = $referenceSql;
@@ -566,7 +544,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to drop a table.
+     * Bir tabloyu silmek (drop) için SQL üretir.
      *
      * @param string $tableName
      * @param string $schemaName
@@ -576,19 +554,11 @@ class Sqlsrv extends \Phalcon\Db\Dialect
      */
     public function dropTable(string $tableName, string $schemaName): string
     {
-        $table = $this->prepareTable($tableName, $schemaName);
-
-        if ($ifExists) {
-            $sql = 'DROP TABLE IF EXISTS '.$table;
-        } else {
-            $sql = 'DROP TABLE '.$table;
-        }
-
-        return $sql;
+        return 'DROP TABLE '.$this->prepareTable($tableName, $schemaName);
     }
 
     /**
-     * Generates SQL to create a view.
+     * Bir view oluşturmak için SQL üretir.
      *
      * @param string $viewName
      * @param array  $definition
@@ -606,7 +576,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to drop a view.
+     * Bir view'i silmek (drop) için SQL üretir.
      *
      * @param string $viewName
      * @param string $schemaName
@@ -628,7 +598,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL checking for the existence of a schema.table
+     * Bir schema.table'ın varlığını kontrol eden SQL üretir
      * <code>
      * echo $dialect->tableExists("posts", "blog");
      * echo $dialect->tableExists("posts");
@@ -651,7 +621,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL checking for the existence of a schema.view.
+     * Bir schema.view'in varlığını kontrol eden SQL üretir.
      *
      * @param string $viewName
      * @param string $schemaName
@@ -670,7 +640,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL describing a table
+     * Bir tabloyu betimleyen SQL üretir
      * <code>
      * print_r($dialect->describeColumns("posts"));
      * </code>.
@@ -691,7 +661,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * List all tables in database
+     * Veritabanındaki tüm tabloları listeler
      * <code>
      * print_r($dialect->listTables("blog"))
      * </code>.
@@ -711,7 +681,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates the SQL to list all views of a schema or user.
+     * Bir schema veya kullanıcının tüm view'lerini listelemek için SQL üretir.
      *
      * @param string $schemaName
      *
@@ -728,7 +698,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to query indexes on a table.
+     * Bir tablodaki index'leri sorgulamak için SQL üretir.
      *
      * @param string $table
      * @param string $schema
@@ -738,14 +708,12 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     public function describeIndexes(string $table, ?string $schema = NULL): string
     {
         $sql = "SELECT * FROM sys.indexes ind INNER JOIN sys.tables t ON ind.object_id = t.object_id WHERE t.name = '{$table}'";
-        if ($schema) {
-        }
 
         return $sql;
     }
 
     /**
-     * Generates SQL to query foreign keys on a table.
+     * Bir tablodaki foreign key'leri sorgulamak için SQL üretir.
      *
      * @param string $table
      * @param string $schema
@@ -765,7 +733,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates the SQL to describe the table creation options.
+     * Tablo oluşturma seçeneklerini betimlemek için SQL üretir.
      *
      * @param string $table
      * @param string $schema
@@ -785,7 +753,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL to add the table creation options.
+     * Tablo oluşturma seçeneklerini eklemek için SQL üretir.
      *
      * @param array $definition
      *
@@ -798,7 +766,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
             $options = $definition['options'];
 
             /*
-             * Check if there is an ENGINE option
+             * Bir ENGINE seçeneği olup olmadığını kontrol et
              */
             if (isset($options['ENGINE']) === true &&
                 $options['ENGINE'] == true) {
@@ -806,7 +774,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
             }
 
             /*
-             * Check if there is an AUTO_INCREMENT option
+             * Bir AUTO_INCREMENT seçeneği olup olmadığını kontrol et
              */
             if (isset($options['AUTO_INCREMENT']) === true &&
                 $options['AUTO_INCREMENT'] == true) {
@@ -814,7 +782,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
             }
 
             /*
-             * Check if there is a TABLE_COLLATION option
+             * Bir TABLE_COLLATION seçeneği olup olmadığını kontrol et
              */
             if (isset($options['TABLE_COLLATION']) === true &&
                 $options['TABLE_COLLATION'] == true) {
@@ -832,7 +800,7 @@ class Sqlsrv extends \Phalcon\Db\Dialect
     }
 
     /**
-     * Generates SQL primary key a table.
+     * Bir tablonun primary key'i için SQL üretir.
      *
      * @param string $table
      * @param string $schema

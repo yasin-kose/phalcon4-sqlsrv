@@ -4,7 +4,7 @@ namespace Phalcon\Db\Result;
 
 /**
  * Phalcon\Db\Result\PdoSqlsrv
- * Encapsulates the resultset internals
+ * Resultset'in iç işleyişini kapsüller
  * <code>
  * $result = $connection->query("SELECT * FROM robots ORDER BY name");
  * $result->setFetchMode(Phalcon\Db::FETCH_NUM);
@@ -16,7 +16,7 @@ namespace Phalcon\Db\Result;
 class PdoSqlsrv extends Pdo
 {
     /**
-     * Gets number of rows returned by a resultset
+     * Bir resultset tarafından döndürülen satır sayısını alır
      * <code>
      * $result = $connection->query("SELECT * FROM robots ORDER BY name");
      * echo 'There are ', $result->numRows(), ' rows in the resultset';
@@ -26,7 +26,6 @@ class PdoSqlsrv extends Pdo
      */
     public function numRows(): int
     {
-        echo $this->rowCount;
         $rowCount = $this->rowCount?:0;
         if ($rowCount === false) {
             $rowCount = $this->_pdoStatement->rowCount();

@@ -3,7 +3,7 @@
 namespace Phalcon\Db;
 
 /**
- * Phalcon\Db\DbListener.
+ * Phalcon\Db\DbListener sınıfı.
  */
 class DbListener
 {
